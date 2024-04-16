@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>HIIT Tabata Workout Timer</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="timer.css">
+</head>
+
+<body>
+    <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+    <div id="app" class="content">
+
+        <div class="header">
+            <div>High Intensity Interval Training</div>
+        </div>
+        <div class="container">
+            <div class="timer">
+                <span class="timer" v-text="pad(Math.floor(displaySec/60))"></span>
+                :
+                <span class="timer" v-text="pad(displaySec%60)"></span>
+            </div>
+            <div class="alert ready" v-show="!label">READY?</div>
+            <div class="alert prep" v-show="label==='prep'">PREPARING</div>
+            <div class="alert workout" v-show="label==='workout'">WORKOUT</div>
+            <div class="alert rest" v-show="label==='rest'">REST</div>
+            <div class="alert done" v-show="label==='done'">FINISHED</div>
+            <!-- <div>Label {{label}}</div>
+            <div>prepSec {{prepSec}}</div>
+            <div>workoutSec {{workoutSec}}</div>
+            <div>restSec {{restSec}}</div> -->
+            <div class="display">
+                <div class="cycles">
+                    <span class="cycleVal" v-text="cycles"></span> Cycles
+                </div>
+                <div class="cycles">
+                    <span class="cycleVal" v-text="tabatas"></span> Tabatas
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary button" v-on:click.prevent.stop="playClick" v-show="!isRunning">Start<i
+                        class="bi bi-play-fill"></i></button>
+                <button class="btn btn-danger button" v-on:click.prevent.stop="pauseClick" v-show="isRunning">Pause<i
+                        class="bi bi-pause-fill"></i></button>
+                <button class="btn btn-warning button" v-on:click.prevent.stop="resetClick">Reset<i
+                        class="bi bi-arrow-counterclockwise"></i></button>
+            </div>
+            <hr>
+            <div class="inputs">
+                <h3>Change Defaults</h3>
+                <div class="mb-3">
+                    <label for="txtPrepSec" class="form-label">Prep Time in Sec.</label>
+                    <input type="number" class="form-control inputTimers" id="txtPrepSec" placeholder=""
+                        v-model="prepSec2" v-on:change="prepSec = prepSec2;">
+                </div>
+                <div class="mb-3">
+                    <label for="workoutSec" class="form-label">Workout Time in Sec.</label>
+                    <input type="number" class="form-control inputTimers" id="workoutSec" placeholder=""
+                        v-model="workoutSec2" v-on:change="workoutSec = workoutSec2;">
+                </div>
+                <div class="mb-3">
+                    <label for="restSec" class="form-label">Rest Time in Sec.</label>
+                    <input type="number" class="form-control inputTimers" id="restSec" placeholder="" v-model="restSec2"
+                        v-on:change="restSec = restSec2;">
+                </div>
+                <div class="mb-3">
+                    <label for="cycles" class="form-label">Cycles</label>
+                    <input type="number" class="form-control inputTimers" id="cycles" placeholder="" v-model="cycles2"
+                        v-on:change="cycles = cycles2">
+                </div>
+                <div class="mb-3">
+                    <label for="tabatas" class="form-label">Tabatas</label>
+                    <input type="number" class="form-control inputTimers" id="tabatas" placeholder="" v-model="tabatas2"
+                        v-on:change="tabatas = tabatas2">
+                </div>
+            </div>
+            <hr>
+            <div class="inputs">
+                <h3>HIIT Training</h3>
+                <p>
+                    High-intensity interval training (HIIT), also called high-intensity intermittent exercise (HIIE) or
+                    sprint interval training (SIT), is a form of interval training, a cardiovascular exercise strategy
+                    alternating short periods of intense anaerobic exercise with less intense recovery periods, until
+                    too exhausted to continue. Though there is no universal HIIT session duration, these intense
+                    workouts typically last under 30 minutes, with times varying based on a participant's current
+                    fitness level. The intensity of HIIT also depends on the duration of the session.
+                </p>
+            </div>
+            <div class="inputs">
+                <h3>Tabata Regimen</h3>
+                <p>
+                    A version of HIIT was based on a 1996 study by Ritsumeikan University Professor Izumi Tabata
+                    (田畑泉) et al. initially involving Olympic speedskaters. The study used 20 seconds of ultra-intense
+                    exercise (at an intensity of about 170% of VO2max) followed by 10 seconds of rest, repeated
+                    continuously for 4 minutes (8 cycles). The exercise was performed on a mechanically braked cycle
+                    ergometer. Tabata called this the IE1 protocol. In the original study, athletes using this
+                    method trained 4 times per week, plus another day of steady-state training, for 6 weeks and obtained
+                    gains similar to a group of athletes who did steady state training (70% VO2max) 5 times per week.
+                    The steady state group had a higher VO2max at the end (from 52 to 57 mL/(kg•min)). However the
+                    Tabata group had achieved comparable aerobic improvements but only exercised 4 minutes per day on
+                    their 4 HIIT days compared to 60 minutes for the aerobic group. The Tabata group also started lower
+                    and gained more overall (from 48 to 55 mL/(kg•min)). Also, only the Tabata group had gained
+                    anaerobic capacity benefits.
+
+                    In popular culture, "Tabata training" has now come to refer to a wide variety of HIIT protocols and
+                    exercise regimens that may or may not have similar benefits to those found in Tabata's original
+                    study.
+                </p>
+                <p>
+                    <a href="https://en.wikipedia.org/wiki/High-intensity_interval_training#Tabata_regimen"
+                        target="new">Source</a>
+                </p>
+            </div>
+
+        </div>
+        <hr>
+        <div class="inputs footer">
+            <h6>Thanks!</h6>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="timer.js"></script>
+</body>
+
+</html>
